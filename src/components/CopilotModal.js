@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import { Animated, Easing, View, NativeModules, Modal, StatusBar, Platform } from 'react-native';
+import { Appearance } from 'react-native-appearance';
 import Tooltip from './Tooltip';
 import StepNumber from './StepNumber';
 import styles, { MARGIN, ARROW_SIZE, STEP_NUMBER_DIAMETER, STEP_NUMBER_RADIUS } from './style';
@@ -68,7 +69,14 @@ class CopilotModal extends Component<Props, State> {
     },
     animated: false,
     containerVisible: false,
+    darkMode: false,
   };
+
+  componentDidMount() {
+    Appearance.addChangeListener(({ colorScheme }) => {
+      this.setState({ darkMode: colorScheme === 'dark' });
+    });
+  }
 
   componentDidUpdate(prevProps: Props) {
     if (prevProps.visible === true && this.props.visible === false) {
@@ -106,6 +114,8 @@ class CopilotModal extends Component<Props, State> {
   }
 
   async _animateMove(obj = {}): void {
+    const { darkMode } = this.state;
+
     const layout = await this.measure();
     if (!this.props.androidStatusBarVisible && Platform.OS === 'android') {
       obj.top -= StatusBar.currentHeight; // eslint-disable-line no-param-reassign
@@ -138,11 +148,11 @@ class CopilotModal extends Component<Props, State> {
 
     if (verticalPosition === 'bottom') {
       tooltip.top = obj.top + obj.height + MARGIN;
-      arrow.borderBottomColor = '#fff';
+      arrow.borderBottomColor = darkMode ? '#282c33' : 'white';
       arrow.top = tooltip.top - (ARROW_SIZE * 2);
     } else {
       tooltip.bottom = layout.height - (obj.top - MARGIN);
-      arrow.borderTopColor = '#fff';
+      arrow.borderTopColor = darkMode ? '#282c33' : 'white';
       arrow.bottom = tooltip.bottom - (ARROW_SIZE * 2);
     }
 
@@ -260,6 +270,7 @@ class CopilotModal extends Component<Props, State> {
       tooltipComponent: TooltipComponent,
       stepNumberComponent: StepNumberComponent,
     } = this.props;
+    const { darkMode } = this.state;
 
     return [
       <Animated.View
@@ -280,7 +291,11 @@ class CopilotModal extends Component<Props, State> {
         />
       </Animated.View>,
       <Animated.View key="arrow" style={[styles.arrow, this.state.arrow]} />,
-      <Animated.View key="tooltip" style={[styles.tooltip, this.props.tooltipStyle, this.state.tooltip]}>
+      <Animated.View
+        key="tooltip"
+        style={[styles.tooltip, this.props.tooltipStyle, this.state.tooltip,
+          { backgroundColor: darkMode ? '#282c33' : 'white' }]}
+      >
         <TooltipComponent
           isFirstStep={this.props.isFirstStep}
           isLastStep={this.props.isLastStep}
