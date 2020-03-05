@@ -69,7 +69,7 @@ class CopilotModal extends Component<Props, State> {
     },
     animated: false,
     containerVisible: false,
-    darkMode: false,
+    darkMode: true,
   };
 
   componentDidMount() {
